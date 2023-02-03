@@ -1,4 +1,4 @@
-package com.segunfrancis.newsfeed.data
+package com.segunfrancis.newsfeed.data.models
 
 data class NewsBaseResponse(
     val articles: List<Article>,
