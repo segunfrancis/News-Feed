@@ -1,14 +1,16 @@
 package com.segunfrancis.newsfeed.ui.home
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -16,6 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.segunfrancis.newsfeed.R
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
 
@@ -53,20 +57,35 @@ fun NewsItem(modifier: Modifier = Modifier, article: HomeArticle) {
             .height(200.dp)
     ) {
         Box {
+            val context = LocalContext.current
+            AsyncImage(
+                model = remember(article.urlToImage) {
+                    ImageRequest.Builder(context)
+                        .data(article.urlToImage)
+                        .crossfade(true)
+                        .diskCacheKey(article.urlToImage)
+                        .memoryCacheKey(article.urlToImage)
+                        .build()
+                },
+                contentDescription = "News Image",
+                modifier = Modifier.fillMaxWidth(),
+                contentScale = ContentScale.Crop
+            )
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                 Text(
                     text = article.title,
                     style = MaterialTheme.typography.body1,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Justify,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    color = MaterialTheme.colors.background
                 )
 
                 Text(
                     text = article.author,
                     style = MaterialTheme.typography.caption,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colors.background
                 )
             }
         }

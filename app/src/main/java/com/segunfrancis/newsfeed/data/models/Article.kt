@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Article(
     val author: String?,
-    val content: String,
+    val content: String?,
     val description: String?,
     val publishedAt: String,
     @Embedded val source: Source?,

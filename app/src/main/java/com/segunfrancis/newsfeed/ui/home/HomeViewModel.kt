@@ -43,7 +43,7 @@ class HomeViewModel @Inject constructor(private val useCase: HomeUseCase) : View
     private fun Article.toHomeArticle(): HomeArticle {
         return HomeArticle(
             author = author ?: "",
-            content = content,
+            content = content ?: "",
             description = description ?: "",
             publishedAt = publishedAt,
             title = title,
