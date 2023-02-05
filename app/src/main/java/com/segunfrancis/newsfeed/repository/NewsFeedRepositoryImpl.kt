@@ -5,17 +5,25 @@ import com.segunfrancis.newsfeed.data.models.Article
 import com.segunfrancis.newsfeed.data.remote.NewsFeedApi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class NewsFeedRepositoryImpl @Inject constructor(
-    private val dao: NewsFeedDao,
+    private val dao: NewsFeedDao?,
     private val api: NewsFeedApi,
     private val dispatcher: CoroutineDispatcher
 ) : NewsFeedRepository {
     override suspend fun getNewsArticles(): Flow<List<Article>> {
         return flow {
-            emit(dao.getNewsArticles().first())
-            dao.addNewsArticles(*api.getNews().articles.toTypedArray())
+
+            try {
+                dao?.addNewsArticles(*api.getNews().articles.toTypedArray())
+            } catch (t: Throwable) {
+                Timber.e(t)
+            }
+            dao?.getNewsArticles()?.collect {
+                emit(it)
+            }
         }.flowOn(dispatcher)
     }
 }
