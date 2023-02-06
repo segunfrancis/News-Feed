@@ -3,7 +3,6 @@ package com.segunfrancis.newsfeed.ui.home
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.segunfrancis.newsfeed.data.models.Article
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
@@ -32,11 +31,13 @@ class HomeViewModel @Inject constructor(private val useCase: HomeUseCase) : View
     fun getHomeData() {
         _homeState.value = _homeState.value.copy(loading = true)
         viewModelScope.launch(exceptionHandler) {
-            _homeState.value =
-                _homeState.value.copy(
-                    articles = useCase().articles.map { it.toHomeArticle() },
-                    loading = false
-                )
+            useCase().articlesFlow.collect {articles ->
+                _homeState.value =
+                    _homeState.value.copy(
+                        articles = articles.map { it.toHomeArticle() },
+                        loading = false
+                    )
+            }
         }
     }
 

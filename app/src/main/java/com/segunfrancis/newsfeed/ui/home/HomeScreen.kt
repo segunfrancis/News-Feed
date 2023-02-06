@@ -1,14 +1,17 @@
 package com.segunfrancis.newsfeed.ui.home
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -22,12 +25,37 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.segunfrancis.newsfeed.R
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
-    Scaffold(topBar = { HomeScreenToolbar(title = R.string.app_name) }) {
+fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = viewModel()) {
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    Scaffold(
+        scaffoldState = scaffoldState,
+        topBar = { HomeScreenToolbar(title = R.string.app_name) }) {
         val response = viewModel.homeState.value
-        NewsList(newsList = response.articles, modifier = Modifier.padding(it))
+        if (response.articles.isNotEmpty()) {
+            Column(modifier) {
+                Header(title = R.string.top_news)
+                NewsList(newsList = response.articles, modifier = Modifier.padding(it))
+            }
+        }
+        if (response.errorMessage != null && response.articles.isNotEmpty()) {
+            // Show snackbar
+            coroutineScope.launch {
+                val snackbarResult = scaffoldState.snackbarHostState.showSnackbar(
+                    message = response.errorMessage,
+                    actionLabel = "Retry",
+                    duration = SnackbarDuration.Indefinite
+                )
+                when (snackbarResult) {
+                    SnackbarResult.ActionPerformed -> { viewModel.getHomeData() }
+                    SnackbarResult.Dismissed -> { }
+                }
+            }
+        }
     }
 }
 
@@ -54,7 +82,8 @@ fun NewsItem(modifier: Modifier = Modifier, article: HomeArticle) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(200.dp),
+        color = MaterialTheme.colors.onBackground
     ) {
         Box {
             val context = LocalContext.current
@@ -68,7 +97,9 @@ fun NewsItem(modifier: Modifier = Modifier, article: HomeArticle) {
                         .build()
                 },
                 contentDescription = "News Image",
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(ContentAlpha.medium),
                 contentScale = ContentScale.Crop
             )
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
@@ -106,6 +137,23 @@ fun NewsList(modifier: Modifier = Modifier, newsList: List<HomeArticle>) {
 }
 
 @Composable
+fun Header(modifier: Modifier = Modifier, @StringRes title: Int) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(color = MaterialTheme.colors.onBackground),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(id = title),
+            style = MaterialTheme.typography.caption,
+            modifier = Modifier.padding(vertical = 4.dp),
+            color = MaterialTheme.colors.background
+        )
+    }
+}
+
+@Composable
 @Preview
 fun HomeScreenToolbarPreview() {
     HomeScreenToolbar(title = R.string.app_name)
@@ -137,3 +185,9 @@ private val newsItem = HomeArticle(
     urlToImage = "",
     onClick = {}
 )
+
+@Composable
+@Preview
+fun HeaderPreview() {
+    Header(title = R.string.top_news)
+}

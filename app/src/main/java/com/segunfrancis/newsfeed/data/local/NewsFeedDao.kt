@@ -14,5 +14,5 @@ interface NewsFeedDao {
     suspend fun addNewsArticles(vararg article: Article)
 
     @Query("SELECT * FROM Article")
-    fun getNewsArticles(): Flow<List<Article>>
+    suspend fun getNewsArticles(): List<Article>
 }
