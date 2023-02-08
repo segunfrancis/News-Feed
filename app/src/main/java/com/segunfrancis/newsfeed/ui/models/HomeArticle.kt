@@ -8,5 +8,5 @@ data class HomeArticle(
     val title: String,
     val url: String,
     val urlToImage: String,
-    val onClick:(HomeArticle) -> Unit
+    val onClick:(String) -> Unit
 )
