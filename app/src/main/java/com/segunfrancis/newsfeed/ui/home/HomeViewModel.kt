@@ -21,7 +21,7 @@ class HomeViewModel @Inject constructor(private val useCase: HomeUseCase) : View
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         _homeState.value =
-            _homeState.value.copy(errorMessage = throwable.handleThrowable(), loading = false)
+            _homeState.value.copy(errorMessage = throwable.handleThrowable(), isLoading = false)
     }
 
     init {
@@ -29,14 +29,14 @@ class HomeViewModel @Inject constructor(private val useCase: HomeUseCase) : View
     }
 
     fun getHomeData() {
-        _homeState.value = _homeState.value.copy(loading = true)
+        _homeState.value = _homeState.value.copy(isLoading = true)
         viewModelScope.launch(exceptionHandler) {
-            useCase().articlesFlow.collect {articles ->
-                _homeState.value =
-                    _homeState.value.copy(
-                        articles = articles.map { it.toHomeArticle() },
-                        loading = false
-                    )
+            useCase().collect { response ->
+                _homeState.value = _homeState.value.copy(
+                    articles = response.articles.map { it.toHomeArticle() },
+                    errorMessage = response.error?.handleThrowable(),
+                    isLoading = response.networkLoading
+                )
             }
         }
     }
@@ -57,6 +57,6 @@ class HomeViewModel @Inject constructor(private val useCase: HomeUseCase) : View
 
 data class HomeUiState(
     val articles: List<HomeArticle> = emptyList(),
-    val loading: Boolean = false,
+    val isLoading: Boolean = false,
     val errorMessage: String? = null
 )

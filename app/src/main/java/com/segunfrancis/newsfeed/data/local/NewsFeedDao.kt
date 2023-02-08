@@ -13,6 +13,6 @@ interface NewsFeedDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addNewsArticles(vararg article: Article)
 
-    @Query("SELECT * FROM Article")
+    @Query("SELECT * FROM Article ORDER BY publishedAt DESC")
     suspend fun getNewsArticles(): List<Article>
 }
