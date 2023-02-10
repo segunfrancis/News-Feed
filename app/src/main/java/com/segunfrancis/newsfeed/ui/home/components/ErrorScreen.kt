@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -54,7 +52,8 @@ fun ErrorScreen(
         Button(
             onClick = onRetryClick,
             shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.heightIn(min = 24.dp)
+            modifier = Modifier.heightIn(min = 24.dp),
+            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error)
         ) {
             Text(text = "Retry")
         }
