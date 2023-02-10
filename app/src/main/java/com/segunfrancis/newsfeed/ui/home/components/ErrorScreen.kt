@@ -36,7 +36,7 @@ fun ErrorScreen(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(color = MaterialTheme.colors.onBackground),
+            .background(color = MaterialTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -49,7 +49,7 @@ fun ErrorScreen(
             text = errorMessage,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.background
+            color = MaterialTheme.colors.onBackground
         )
         Button(
             onClick = onRetryClick,

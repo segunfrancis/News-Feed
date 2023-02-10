@@ -21,10 +21,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.HtmlCompat
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.segunfrancis.newsfeed.R
 import com.segunfrancis.newsfeed.ui.home.newsItem
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
+import com.segunfrancis.newsfeed.ui.theme.White500
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -37,7 +41,7 @@ fun NewsItem(
         modifier = modifier
             .fillMaxWidth()
             .height(200.dp),
-        backgroundColor = MaterialTheme.colors.onBackground,
+        backgroundColor = MaterialTheme.colors.background,
         onClick = { onNewsItemClick(article.url) }
     ) {
         Box {
@@ -47,8 +51,10 @@ fun NewsItem(
                     ImageRequest.Builder(context)
                         .data(article.urlToImage)
                         .crossfade(true)
-                        .diskCacheKey(article.urlToImage)
-                        .memoryCacheKey(article.urlToImage)
+                        .placeholder(R.drawable.image_loader)
+                        .error(R.drawable.ic_error)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
                         .build()
                 },
                 contentDescription = "News Image",
@@ -64,14 +70,14 @@ fun NewsItem(
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Justify,
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colors.background
+                    color = MaterialTheme.colors.onBackground
                 )
 
                 Text(
-                    text = article.author,
+                    text = HtmlCompat.fromHtml(article.author, HtmlCompat.FROM_HTML_MODE_LEGACY).toString(),
                     style = MaterialTheme.typography.caption,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    color = MaterialTheme.colors.background
+                    color = White500
                 )
             }
         }

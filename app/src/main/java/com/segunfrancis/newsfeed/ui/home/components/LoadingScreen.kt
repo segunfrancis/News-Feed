@@ -23,7 +23,7 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.loading_animation))
     Box(
         modifier = modifier
-            .background(color = MaterialTheme.colors.onBackground)
+            .background(color = MaterialTheme.colors.background)
             .fillMaxWidth()
             .fillMaxHeight(),
         contentAlignment = Alignment.Center

@@ -14,7 +14,7 @@ fun TopProgressBar(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
-        color = MaterialTheme.colors.primary
+        color = MaterialTheme.colors.secondary
     )
 }
 

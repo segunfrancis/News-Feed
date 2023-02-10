@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.segunfrancis.newsfeed.R
+import com.segunfrancis.newsfeed.ui.theme.Black700
 
 @Composable
 fun NewsFeedToolbar(@StringRes title: Int, modifier: Modifier = Modifier) {
@@ -21,14 +22,14 @@ fun NewsFeedToolbar(@StringRes title: Int, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp),
-        backgroundColor = MaterialTheme.colors.onBackground
+        backgroundColor = Black700
     ) {
         Text(
             text = stringResource(id = title),
             style = MaterialTheme.typography.caption,
             fontSize = 18.sp,
             modifier = Modifier.padding(horizontal = 6.dp),
-            color = MaterialTheme.colors.background
+            color = MaterialTheme.colors.onBackground
         )
     }
 }
@@ -38,4 +39,3 @@ fun NewsFeedToolbar(@StringRes title: Int, modifier: Modifier = Modifier) {
 fun NewsFeedToolbarPreview() {
     NewsFeedToolbar(title = R.string.app_name)
 }
-

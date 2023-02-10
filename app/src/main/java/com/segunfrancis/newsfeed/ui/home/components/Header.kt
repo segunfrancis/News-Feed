@@ -20,14 +20,14 @@ fun Header(modifier: Modifier = Modifier, @StringRes title: Int) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = MaterialTheme.colors.onBackground),
+            .background(color = MaterialTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = stringResource(id = title),
             style = MaterialTheme.typography.caption,
             modifier = Modifier.padding(vertical = 4.dp),
-            color = MaterialTheme.colors.background
+            color = MaterialTheme.colors.onBackground
         )
     }
 }

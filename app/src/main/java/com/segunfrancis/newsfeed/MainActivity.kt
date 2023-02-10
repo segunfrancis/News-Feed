@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.onBackground
+                    color = MaterialTheme.colors.background
                 ) {
                     NewsFeedApp(navController = navController, scaffoldState = scaffoldState)
                 }
