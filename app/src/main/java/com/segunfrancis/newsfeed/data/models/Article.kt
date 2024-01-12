@@ -13,5 +13,6 @@ data class Article(
     @Embedded val source: Source?,
     @PrimaryKey val title: String,
     val url: String,
-    val urlToImage: String?
+    val urlToImage: String?,
+    val category: String
 )

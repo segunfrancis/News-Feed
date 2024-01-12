@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,7 +37,7 @@ fun ErrorScreen(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(color = MaterialTheme.colors.background),
+            .background(color = MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -46,14 +49,14 @@ fun ErrorScreen(
         Text(
             text = errorMessage,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.onBackground
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Button(
             onClick = onRetryClick,
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier.heightIn(min = 24.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
             Text(text = "Retry")
         }
@@ -61,7 +64,7 @@ fun ErrorScreen(
 }
 
 @Composable
-@Preview(showSystemUi = true)
+@Preview
 fun ErrorScreenPreview() {
     ErrorScreen(errorMessage = "Something went wrong")
 }

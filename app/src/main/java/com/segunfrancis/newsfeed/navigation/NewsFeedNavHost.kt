@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,9 +19,7 @@ import com.segunfrancis.newsfeed.ui.home.HomeScreen
 @Composable
 fun NewsFeedNavHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController,
-    scaffoldState: ScaffoldState
-) {
+    navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = Home.route,
@@ -34,8 +31,7 @@ fun NewsFeedNavHost(
                 onNewsItemClick = { url ->
                     openTab(context = context, url = url)
                 },
-                viewModel = hiltViewModel(),
-                scaffoldState = scaffoldState
+                viewModel = hiltViewModel()
             )
 
             /* Add other destinations below */

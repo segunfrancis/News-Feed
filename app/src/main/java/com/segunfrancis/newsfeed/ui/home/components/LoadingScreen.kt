@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,7 +23,7 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
     val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.loading_animation))
     Box(
         modifier = modifier
-            .background(color = MaterialTheme.colors.background)
+            .background(color = MaterialTheme.colorScheme.background)
             .fillMaxWidth()
             .fillMaxHeight(),
         contentAlignment = Alignment.Center
@@ -37,7 +37,7 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-@Preview(showSystemUi = true)
+@Preview
 fun LoadingScreenPreview() {
     LoadingScreen()
 }

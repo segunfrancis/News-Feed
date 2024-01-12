@@ -10,6 +10,7 @@ interface NewsFeedApi {
     @GET("top-headlines")
     suspend fun getNews(
         @Query("country") country: String = "us",
+        @Query("category") category: String,
         @Query("apiKey") apiKey: String = BuildConfig.NEWS_API_KEY
     ): NewsBaseResponse
 }
