@@ -15,4 +15,7 @@ interface NewsFeedDao {
 
     @Query("SELECT * FROM Article WHERE category is :category ORDER BY publishedAt DESC")
     fun getNewsArticles(category: String): PagingSource<Int, Article>
+
+    @Query("SELECT * FROM Article ORDER BY publishedAt DESC")
+    suspend fun getNewsArticlesForTesting(): List<Article>
 }

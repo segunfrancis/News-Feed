@@ -3,10 +3,12 @@ package com.segunfrancis.newsfeed.ui.home.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import coil.request.ImageRequest
 import com.segunfrancis.newsfeed.R
 import com.segunfrancis.newsfeed.ui.home.newsItem
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
+import com.segunfrancis.newsfeed.util.formatDate
 
 @Composable
 fun NewsItem(
@@ -48,7 +51,7 @@ fun NewsItem(
                         .data(article.urlToImage)
                         .crossfade(true)
                         .placeholder(R.drawable.image_loader)
-                        .error(R.drawable.ic_error)
+                        .error(R.drawable.image_error)
                         .diskCachePolicy(CachePolicy.ENABLED)
                         .memoryCachePolicy(CachePolicy.ENABLED)
                         .build()
@@ -67,23 +70,35 @@ fun NewsItem(
                 Text(
                     text = article.title,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Justify,
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                if (article.author.isNotEmpty()) {
+                Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = HtmlCompat.fromHtml(article.author, HtmlCompat.FROM_HTML_MODE_LEGACY)
                             .toString(),
                         style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .weight(1F),
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7F)
                     )
-                } else {
-                    Spacer(Modifier.height(6.dp))
+
+                    Text(
+                        text = article.publishedAt.formatDate(),
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7F)
+                    )
                 }
+                Spacer(Modifier.height(6.dp))
             }
         }
     }

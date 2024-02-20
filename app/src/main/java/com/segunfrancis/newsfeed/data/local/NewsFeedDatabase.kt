@@ -1,6 +1,7 @@
 package com.segunfrancis.newsfeed.data.local
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -38,6 +39,7 @@ abstract class NewsFeedDatabase : RoomDatabase() {
     }
 }
 
+@VisibleForTesting
 val migrate_from_1_2 = object : Migration(1, 2) {
     override fun migrate(database: SupportSQLiteDatabase) {
         database.execSQL("ALTER TABLE `Article` ADD COLUMN `category` TEXT")

@@ -8,12 +8,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.segunfrancis.newsfeed.navigation.openTab
 import com.segunfrancis.newsfeed.ui.home.HomeScreen
 import com.segunfrancis.newsfeed.ui.theme.NewsFeedTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,12 +34,7 @@ class MainActivity : ComponentActivity() {
                         startDestination = Home.route
                     ) {
                         composable(route = Home.route) {
-                            val context = LocalContext.current
-                            HomeScreen(
-                                onNewsItemClick = { url ->
-                                    openTab(context = context, url = url)
-                                }
-                            )
+                            HomeScreen()
 
                             /* Add other destinations below */
 

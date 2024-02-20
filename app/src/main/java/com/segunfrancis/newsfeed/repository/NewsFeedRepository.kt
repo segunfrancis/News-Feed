@@ -9,4 +9,6 @@ interface NewsFeedRepository {
     suspend fun getNewsArticles(category: String): Pager<Int, Article>
 
     suspend fun loadNewsArticlesRemote(category: String): Flow<RepositoryRemoteState>
+
+    suspend fun getNewsArticleTest(category: String): Flow<ResponseTest>
 }
