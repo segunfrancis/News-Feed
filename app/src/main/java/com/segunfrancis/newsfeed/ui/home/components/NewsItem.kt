@@ -29,6 +29,7 @@ import coil.request.ImageRequest
 import com.segunfrancis.newsfeed.R
 import com.segunfrancis.newsfeed.ui.home.newsItem
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
+import com.segunfrancis.newsfeed.ui.theme.NewsFeedTheme
 import com.segunfrancis.newsfeed.util.formatDate
 
 @Composable
@@ -107,5 +108,7 @@ fun NewsItem(
 @Composable
 @Preview
 fun NewsItemPreview() {
-    NewsItem(article = newsItem)
+    NewsFeedTheme {
+        NewsItem(article = newsItem)
+    }
 }

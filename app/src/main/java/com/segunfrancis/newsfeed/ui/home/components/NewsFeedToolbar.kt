@@ -1,5 +1,7 @@
 package com.segunfrancis.newsfeed.ui.home.components
 
+import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenu
@@ -19,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.segunfrancis.newsfeed.R
+import com.segunfrancis.newsfeed.ui.theme.NewsFeedTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,11 +76,14 @@ fun NewsFeedToolbar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Preview(uiMode = UI_MODE_NIGHT_NO)
 fun NewsFeedToolbarPreview() {
-    NewsFeedToolbar(
-        title = R.string.app_name,
-        scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-        onMenuItemClick = {}
-    )
+    NewsFeedTheme {
+        NewsFeedToolbar(
+            title = R.string.app_name,
+            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+            onMenuItemClick = {}
+        )
+    }
 }
