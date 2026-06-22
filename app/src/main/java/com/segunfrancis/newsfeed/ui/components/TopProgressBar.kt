@@ -1,4 +1,4 @@
-package com.segunfrancis.newsfeed.ui.home.components
+package com.segunfrancis.newsfeed.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight

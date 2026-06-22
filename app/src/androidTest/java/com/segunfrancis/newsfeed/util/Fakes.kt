@@ -1,7 +1,7 @@
 package com.segunfrancis.newsfeed.util
 
-import com.segunfrancis.newsfeed.data.models.Article
-import com.segunfrancis.newsfeed.data.models.Source
+import com.segunfrancis.newsfeed.data.local.entities.Article
+import com.segunfrancis.newsfeed.data.local.entities.Source
 
 val source = Source("12", "SFGate")
 

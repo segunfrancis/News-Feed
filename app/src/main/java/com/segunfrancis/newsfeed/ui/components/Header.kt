@@ -1,4 +1,4 @@
-package com.segunfrancis.newsfeed.ui.home.components
+package com.segunfrancis.newsfeed.ui.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -36,21 +36,23 @@ fun Header(modifier: Modifier = Modifier, title: String) {
 }
 
 @Composable
-fun StickyHeader(title: String) {
+fun StickyHeader(title: String?) {
     Row(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6F), CircleShape)
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        title?.let {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6F), CircleShape)
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-package com.segunfrancis.newsfeed.ui.home.components
+package com.segunfrancis.newsfeed.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -30,7 +30,6 @@ import com.segunfrancis.newsfeed.R
 import com.segunfrancis.newsfeed.ui.home.newsItem
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
 import com.segunfrancis.newsfeed.ui.theme.NewsFeedTheme
-import com.segunfrancis.newsfeed.util.formatDate
 
 @Composable
 fun NewsItem(
@@ -81,7 +80,7 @@ fun NewsItem(
 
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = HtmlCompat.fromHtml(article.author, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                        text = HtmlCompat.fromHtml(article.author.orEmpty(), HtmlCompat.FROM_HTML_MODE_LEGACY)
                             .toString(),
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
@@ -91,7 +90,7 @@ fun NewsItem(
                     )
 
                     Text(
-                        text = article.publishedAt.formatDate(),
+                        text = article.publishedAt,
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
                             .wrapContentWidth()

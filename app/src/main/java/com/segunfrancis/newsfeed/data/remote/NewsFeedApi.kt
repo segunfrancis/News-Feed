@@ -1,7 +1,6 @@
 package com.segunfrancis.newsfeed.data.remote
 
 import com.segunfrancis.newsfeed.BuildConfig
-import com.segunfrancis.newsfeed.data.models.NewsBaseResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -12,5 +11,5 @@ interface NewsFeedApi {
         @Query("country") country: String = "us",
         @Query("category") category: String,
         @Query("apiKey") apiKey: String = BuildConfig.NEWS_API_KEY
-    ): NewsBaseResponse
+    ): NewsBaseResponseDto
 }

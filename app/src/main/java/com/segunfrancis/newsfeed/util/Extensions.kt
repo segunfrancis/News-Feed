@@ -1,15 +1,14 @@
 package com.segunfrancis.newsfeed.util
 
 import android.content.Context
-import android.net.Uri
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.segunfrancis.newsfeed.R
-import com.segunfrancis.newsfeed.data.models.Article
 import retrofit2.HttpException
 import timber.log.Timber
 import java.net.ConnectException
@@ -44,20 +43,10 @@ fun Context.openTab(url: String) {
         .build()
     builder.setDefaultColorSchemeParams(colorParams)
     val customTabsIntent = builder.build()
-    customTabsIntent.launchUrl(this, Uri.parse(url))
+    customTabsIntent.launchUrl(this, url.toUri())
 }
 
-fun Article.isRemoved(): Boolean {
-    return source?.name.equals("[Removed]", ignoreCase = true) || title.equals(
-        "[Removed]",
-        ignoreCase = true
-    ) || description.equals("[Removed]", ignoreCase = true) || content.equals(
-        "[Removed]",
-        ignoreCase = true
-    ) || url.equals("https://removed.com", ignoreCase = true)
-}
-
-fun currentDate(): String {
+private fun currentDate(): String {
     val format = SimpleDateFormat("E, dd MMM", Locale.getDefault())
     return format.format(System.currentTimeMillis())
 }

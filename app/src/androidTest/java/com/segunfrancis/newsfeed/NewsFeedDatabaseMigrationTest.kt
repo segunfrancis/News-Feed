@@ -10,9 +10,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.segunfrancis.newsfeed.data.local.NewsFeedDatabase
+import com.segunfrancis.newsfeed.data.local.entities.Article
+import com.segunfrancis.newsfeed.data.local.entities.Source
 import com.segunfrancis.newsfeed.data.local.migrate_from_1_2
-import com.segunfrancis.newsfeed.data.models.Article
-import com.segunfrancis.newsfeed.data.models.Source
 import com.segunfrancis.newsfeed.util.article
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -60,8 +60,8 @@ class NewsFeedDatabaseMigrationTest {
             close()
         }
         helper.runMigrationsAndValidate(TEST_DB, 2, true, migrate_from_1_2)
-        getMigratedRoomDatabase().dao().addNewsArticles(article)
-        val migratedArticle = getMigratedRoomDatabase().dao().getNewsArticlesForTesting()
+        getMigratedRoomDatabase().newaDao().addNewsArticles(article)
+        val migratedArticle = getMigratedRoomDatabase().newaDao().getNewsArticlesForTesting()
 
         assertEquals(article.title, migratedArticle[0].title)
     }

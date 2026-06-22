@@ -1,8 +1,9 @@
 package com.segunfrancis.newsfeed.di
 
 import android.content.Context
-import com.segunfrancis.newsfeed.data.local.NewsFeedDao
+import com.segunfrancis.newsfeed.data.local.dao.NewsFeedDao
 import com.segunfrancis.newsfeed.data.local.NewsFeedDatabase
+import com.segunfrancis.newsfeed.data.local.dao.SavedArticleDao
 import com.segunfrancis.newsfeed.data.remote.NewsFeedApi
 import com.segunfrancis.newsfeed.data.remote.NewsFeedClient
 import dagger.Module
@@ -27,7 +28,12 @@ class NewsFeedModule {
 
     @Provides
     fun provideDao(database: NewsFeedDatabase?): NewsFeedDao? {
-        return database?.dao()
+        return database?.newaDao()
+    }
+
+    @Provides
+    fun provideSavedArticleDao(database: NewsFeedDatabase?): SavedArticleDao? {
+        return database?.savedArticleDao()
     }
 
     @Provides

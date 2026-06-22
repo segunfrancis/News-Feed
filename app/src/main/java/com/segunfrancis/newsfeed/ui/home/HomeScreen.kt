@@ -1,84 +1,188 @@
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+
 package com.segunfrancis.newsfeed.ui.home
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabPosition
+import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.segunfrancis.newsfeed.ui.home.components.ErrorScreen
-import com.segunfrancis.newsfeed.ui.home.components.Header
-import com.segunfrancis.newsfeed.ui.home.components.LoadingScreen
-import com.segunfrancis.newsfeed.ui.home.components.NewsFeedToolbar
-import com.segunfrancis.newsfeed.ui.home.components.NewsItem
-import com.segunfrancis.newsfeed.ui.home.components.StickyHeader
-import com.segunfrancis.newsfeed.ui.home.components.TopProgressBar
-import com.segunfrancis.newsfeed.ui.home.components.menuItems
+import coil.compose.AsyncImage
+import com.segunfrancis.newsfeed.R
+import com.segunfrancis.newsfeed.ui.components.ErrorScreen
+import com.segunfrancis.newsfeed.ui.components.LoadingScreen
+import com.segunfrancis.newsfeed.ui.components.OptionItem
+import com.segunfrancis.newsfeed.ui.components.SingleMenuItem
+import com.segunfrancis.newsfeed.ui.components.StickyHeader
+import com.segunfrancis.newsfeed.ui.components.menuItems
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
-import com.segunfrancis.newsfeed.ui.theme.NewsFeedTheme
-import com.segunfrancis.newsfeed.util.formatDate
+import com.segunfrancis.newsfeed.util.handleThrowable
 import com.segunfrancis.newsfeed.util.openTab
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
-    val response = viewModel.homeState.value
-    val scope = rememberCoroutineScope()
-    val optionIndex by viewModel.menuOption.collectAsState(
-        initial = 0,
-        scope.coroutineContext
-    )
-    val newsArticles = viewModel.newsArticles?.collectAsLazyPagingItems()
+fun HomeScreen(
+    snackbarHostState: SnackbarHostState,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val selectedArticle by viewModel.selectedArticle.collectAsState()
+    val isBookmarked by viewModel.isSelectedArticleBookmarked.collectAsState()
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        viewModel.bookmarkAction.collect { action ->
+            when (action) {
+                BookmarkActions.OnAddBookmark -> {
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.added_to_save),
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                is BookmarkActions.OnError -> {
+                    snackbarHostState.showSnackbar(
+                        message = action.message,
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                BookmarkActions.OnRemoveBookmark -> {
+                    snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.removed_from_save),
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
 
     HomeScreenContent(
-        response = response,
-        optionIndex = optionIndex,
-        newsArticles = newsArticles,
-        scope = scope,
-        modifier = Modifier
-    ) {
-        when (it) {
-            is HomeScreenUiActions.OnMenuItemClick -> viewModel.setSelectedMenuOption(it.index)
-            is HomeScreenUiActions.OnNewsItemClick -> context.openTab(it.url)
-            HomeScreenUiActions.OnRetryClick -> viewModel.initRemote()
+        modifier = Modifier,
+        snackbarHostState = snackbarHostState,
+        articlesForCategory = viewModel::articlesForCategory,
+        pagingEventsFor = { viewModel.pagingEventsFor(it) },
+        onAction = {
+            when (it) {
+                is HomeScreenUiActions.OnNewsItemClick -> context.openTab(it.url)
+                is HomeScreenUiActions.OnRetryClick -> viewModel.retry(it.category)
+                is HomeScreenUiActions.OnRefreshAction -> viewModel.refresh(it.category)
+                is HomeScreenUiActions.OnMoreClick -> {
+                    viewModel.setSelectedArticle(it.article)
+                    viewModel.setSelectedCategory(it.category)
+                }
+            }
+        }
+    )
+
+    selectedArticle?.let {
+        ModalBottomSheet(
+            sheetState = bottomSheetState,
+            onDismissRequest = { viewModel.setSelectedArticle(null) },
+            sheetMaxWidth = BottomSheetDefaults.SheetMaxWidth,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = Color.Transparent) },
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            properties = ModalBottomSheetProperties(shouldDismissOnBackPress = true)
+        ) {
+            Column {
+                OptionItem(
+                    title = if (isBookmarked) R.string.remove_from_save else R.string.save_for_later,
+                    iconRes = if (isBookmarked) R.drawable.ic_bookmark_filled else R.drawable.ic_bookmark_outline,
+                    onClick = {
+                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                            if (!bottomSheetState.isVisible) {
+                                viewModel.toggleBookmark()
+
+                                viewModel.setSelectedArticle(null)
+                            }
+                        }
+                    }
+                )
+                Spacer(Modifier.height(4.dp))
+                OptionItem(
+                    title = R.string.share,
+                    iconRes = R.drawable.ic_share,
+                    onClick = {
+                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                            if (!bottomSheetState.isVisible) {
+                                viewModel.toggleBookmark()
+
+                                viewModel.setSelectedArticle(null)
+                            }
+                        }
+                    }
+                )
+                Spacer(Modifier.height(24.dp))
+            }
         }
     }
 }
@@ -86,108 +190,278 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreenContent(
-    response: HomeUiState,
-    optionIndex: Int,
-    newsArticles: LazyPagingItems<HomeArticle>?,
-    scope: CoroutineScope,
     modifier: Modifier,
-    onAction: (HomeScreenUiActions) -> Unit
+    snackbarHostState: SnackbarHostState,
+    onAction: (HomeScreenUiActions) -> Unit,
+    articlesForCategory: (String) -> Flow<PagingData<HomeArticle>>,
+    pagingEventsFor: (String) -> Flow<PagingEvent>
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
-    val lazyListState = rememberLazyListState()
-    val visibleItemIndex by remember { derivedStateOf { lazyListState.firstVisibleItemIndex } }
+    val pagerState = rememberPagerState(pageCount = { menuItems.size })
+    val scope = rememberCoroutineScope()
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                NewsFeedToolbar(
-                    scrollBehavior = scrollBehavior,
-                    onMenuItemClick = { onAction(HomeScreenUiActions.OnMenuItemClick(it)) })
+    Column(modifier) {
+        NewsScrollableTabRow(
+            tabs = menuItems,
+            pagerState = pagerState,
+            onTabSelected = { index ->
+                scope.launch {
+                    pagerState.animateScrollToPage(
+                        page = index,
+                        animationSpec = tween(
+                            durationMillis = 300,
+                            easing = FastOutSlowInEasing
+                        ),
+                    )
+                }
+            },
+        )
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize(),
+            // Improves feel: keep adjacent pages partially composed
+            beyondViewportPageCount = 1,
+            key = { menuItems[it].title },
+        ) { page ->
+            val tab = menuItems[page]
+            val category = tab.queryParam
+
+            // Each page gets its own independent paging items.
+            // collectAsLazyPagingItems() is stable across recompositions because
+            // the underlying flow reference never changes (pre-built Map in VM).
+            val articles = articlesForCategory(category).collectAsLazyPagingItems()
+
+            // FIX 1: wire paging events for THIS category only.
+            // LaunchedEffect(articles) re-registers if articles is recreated
+            // (e.g. after process death + restore).
+            LaunchedEffect(articles) {
+                pagingEventsFor(category).collect { event ->
+                    when (event) {
+                        PagingEvent.Refresh -> articles.refresh()
+                        PagingEvent.Retry -> articles.retry()
+                    }
+                }
+            }
+
+            // FIX 2: derive error/loading state per page, not once for the whole screen.
+            val mediatorRefreshState = articles.loadState.mediator?.refresh
+            val isInitialLoad = mediatorRefreshState is LoadState.Loading && articles.itemCount == 0
+            val isCriticalError = mediatorRefreshState is LoadState.Error && articles.itemCount == 0
+            val hasBackgroundError =
+                mediatorRefreshState is LoadState.Error && articles.itemCount > 0
+
+            if (hasBackgroundError) {
+                LaunchedEffect(snackbarHostState) {
+                    val result = snackbarHostState.showSnackbar(
+                        message = (mediatorRefreshState as LoadState.Error).error.handleThrowable(),
+                        actionLabel = "Retry",
+                        duration = SnackbarDuration.Indefinite,
+                        withDismissAction = true,
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        onAction(HomeScreenUiActions.OnRetryClick(category))
+                    }
+                }
+            }
+
+            when {
+                isInitialLoad -> LoadingScreen()
+
+                isCriticalError -> ErrorScreen(
+                    errorMessage = (mediatorRefreshState as LoadState.Error).error.handleThrowable(),
+                    onRetryClick = { onAction(HomeScreenUiActions.OnRetryClick(category)) },
+                )
+
+                else -> NewsTabContent(
+                    tab = tab,
+                    articleItems = articles,
+                    onItemClick = { onAction(HomeScreenUiActions.OnNewsItemClick(it)) },
+                    onRefresh = { onAction(HomeScreenUiActions.OnRefreshAction(category)) },
+                    onMoreClick = {
+                        onAction(
+                            HomeScreenUiActions.OnMoreClick(
+                                category = category,
+                                article = it
+                            )
+                        )
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun NewsScrollableTabRow(
+    tabs: List<SingleMenuItem>,
+    pagerState: PagerState,
+    onTabSelected: (Int) -> Unit,
+) {
+    val selectedIndex = pagerState.currentPage
+
+    ScrollableTabRow(
+        selectedTabIndex = selectedIndex,
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.primary,
+        edgePadding = 0.dp,
+        indicator = { tabPositions ->
+            if (tabPositions.isNotEmpty()) {
+                PagerTabIndicator(
+                    tabPositions = tabPositions,
+                    pagerState = pagerState,
+                    indicatorColor = MaterialTheme.colorScheme.secondary,
+                )
             }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        floatingActionButtonPosition = FabPosition.End,
-        floatingActionButton = {
-            AnimatedContent(
-                targetState = !lazyListState.isScrollInProgress && visibleItemIndex > 3,
-                label = "Fab animation container"
+        divider = {
+            HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        },
+    ) {
+        tabs.forEachIndexed { index, tab ->
+            val isSelected = index == selectedIndex
+            val labelColor by animateColorAsState(
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = 0.6f
+                ),
+                animationSpec = tween(200),
+                label = "tab_label_color_$index",
+            )
+            Tab(
+                selected = isSelected,
+                onClick = { onTabSelected(index) },
+                modifier = Modifier.height(44.dp),
+                selectedContentColor = MaterialTheme.colorScheme.primary,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             ) {
-                if (it) {
-                    FloatingActionButton(
-                        onClick = {
-                            scope.launch { lazyListState.animateScrollToItem(0) }
-                        },
-                        content = {
-                            Image(
-                                imageVector = Icons.Filled.KeyboardArrowUp,
-                                contentDescription = "Fab"
-                            )
-                        }
-                    )
-                }
+                Text(
+                    text = tab.title,
+                    color = labelColor,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    fontSize = 14.sp,
+                    letterSpacing = 0.sp,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                )
             }
         }
-    ) { innerPadding ->
+    }
+}
 
-        if (response.errorMessage != null) {
-            if ((newsArticles?.itemCount ?: 0) <= 0) {
-                ErrorScreen(
-                    errorMessage = response.errorMessage,
-                    onRetryClick = { onAction(HomeScreenUiActions.OnRetryClick) })
-            } else {
-                LaunchedEffect(key1 = snackbarHostState) {
-                    val snackbarResult = snackbarHostState.showSnackbar(
-                        message = response.errorMessage,
-                        actionLabel = "Retry",
-                        duration = SnackbarDuration.Indefinite
-                    )
-                    when (snackbarResult) {
-                        SnackbarResult.ActionPerformed -> {
-                            onAction(HomeScreenUiActions.OnRetryClick)
-                        }
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PagerTabIndicator(
+    tabPositions: List<TabPosition>,
+    pagerState: PagerState,
+    indicatorColor: Color,
+    indicatorHeight: Dp = 3.dp,
+) {
+    // pagerState.currentPageOffsetFraction is in [-0.5, 0.5]
+    // We use it to interpolate the indicator between the current and target tab
+    val currentPage = minOf(pagerState.currentPage, tabPositions.lastIndex)
+    val fraction = pagerState.currentPageOffsetFraction
 
-                        SnackbarResult.Dismissed -> {}
+    val targetPage = (currentPage + if (fraction > 0) 1 else -1)
+        .coerceIn(tabPositions.indices)
+
+    // Lerp width and offset so the indicator stretches slightly mid-swipe
+    val indicatorWidth: Dp
+    val indicatorOffset: Dp
+
+    if (tabPositions.isEmpty()) return
+
+    val currentTab = tabPositions[currentPage]
+    val targetTab = tabPositions[targetPage]
+    val absFraction = kotlin.math.abs(fraction)
+
+    indicatorWidth = lerp(currentTab.width, targetTab.width, absFraction)
+    indicatorOffset = lerp(currentTab.left, targetTab.left, absFraction)
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .wrapContentSize(align = Alignment.BottomStart)
+            .offset(x = indicatorOffset)
+            .width(indicatorWidth)
+            .padding(horizontal = 12.dp)         // inset so it doesn't span full tab width
+            .height(indicatorHeight)
+            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+            .background(indicatorColor),
+    )
+}
+
+@Composable
+private fun NewsTabContent(
+    tab: SingleMenuItem,
+    articleItems: LazyPagingItems<HomeArticle>,
+    onItemClick: (String) -> Unit,
+    onRefresh: () -> Unit,
+    onMoreClick: (HomeArticle) -> Unit
+) {
+    // FIX 2: each tab gets its OWN scroll state — never shared across pages.
+    // Sharing one LazyListState across multiple LazyColumns (which happens
+    // when beyondViewportPageCount > 0) is what caused the deactivated-node crash.
+    val lazyListState = rememberLazyListState()
+
+    val mediatorRefreshState = articleItems.loadState.mediator?.refresh
+    // True when refreshing but cached data already exists (pull-to-refresh feel)
+    val isRefreshing = mediatorRefreshState is LoadState.Loading && articleItems.itemCount > 0
+
+    // FIX 4: groupedArticles computed in remember, NOT inside the lazy
+    // layout scope. itemSnapshotList inside lazy measurement triggers
+    // extra layout passes on every frame.
+    //
+    // Keyed on itemSnapshotList so it only recomputes when paging loads
+    // new items — not on every recomposition.
+    val snapshot = articleItems.itemSnapshotList
+    val groupedArticles = remember(snapshot) {
+        snapshot.items.drop(1).groupBy { it.publishedAt }
+    }
+
+    PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = { onRefresh() }) {
+        if (articleItems.itemCount > 0) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(vertical = 8.dp),
+                state = lazyListState
+            ) {
+                // Prominent top story
+                articleItems[0]?.let {
+                    item {
+                        HeroArticleCard(
+                            article = it,
+                            onClick = onItemClick,
+                            onMoreClick = { onMoreClick(it) })
                     }
                 }
-            }
-        }
-        if ((newsArticles?.itemCount ?: 0) > 0) {
-            Column(modifier.padding(innerPadding)) {
-                Header(title = menuItems[optionIndex].title)
-                if (response.isLoading) {
-                    TopProgressBar()
-                }
-                LazyColumn(
-                    modifier = modifier,
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    state = lazyListState
-                ) {
-                    newsArticles?.let { article ->
-                        val groupedArticles = article.itemSnapshotList.groupBy { it?.publishedAt.formatDate() }
-                        groupedArticles.forEach { (date, article) ->
-                            stickyHeader {
-                                StickyHeader(date)
-                            }
 
-                            items(article) { homeArticle ->
-                                homeArticle?.let {
-                                    NewsItem(article = it) { url ->
-                                        onAction(HomeScreenUiActions.OnNewsItemClick(url))
-                                    }
-                                }
-                            }
-                        }
+                // Section divider
+                item {
+                    SectionLabel()
+                }
+
+                groupedArticles.forEach { (date, articles) ->
+                    stickyHeader(key = "header_${tab.title}_$date") {
+                        StickyHeader(date)
+                    }
+                    items(
+                        items = articles,
+                        key = { "${tab.title}_${it.url}" },    // url is more stable than title
+                    ) { article ->
+                        CompactArticleCard(
+                            article = article,
+                            onClick = onItemClick,
+                            onMoreClick = { onMoreClick(article) })
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            thickness = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
                     }
                 }
-            }
-        } else {
-            if (response.isLoading) {
-                LoadingScreen()
+
+                // Bottom breathing room
+                item { Spacer(Modifier.height(24.dp)) }
             }
         }
     }
@@ -195,22 +469,228 @@ fun HomeScreenContent(
 
 @Preview
 @Composable
-fun HomeScreenPreview() {
-    NewsFeedTheme {
-        HomeScreenContent(
-            response = HomeUiState(isLoading = true, errorMessage = "Something went wrong"),
-            optionIndex = 2,
-            newsArticles = null,
-            scope = rememberCoroutineScope(),
+private fun HeroArticleCard(
+    article: HomeArticle = newsItem,
+    onClick: (String) -> Unit = {},
+    onMoreClick: () -> Unit = {}
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick(article.url) }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(bottom = 16.dp)) {
+            AsyncImage(
+                model = article.urlToImage,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                error = painterResource(R.drawable.image_error)
+            )
+            Spacer(Modifier.height(6.dp))
+
+            article.source?.let {
+                Text(
+                    text = article.source,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(Modifier.height(2.dp))
+
+            // Headline
+            Text(
+                text = article.title,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 26.sp
+                ),
+                modifier = Modifier.padding(horizontal = 16.dp),
+                fontSize = 22.sp,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            // Meta row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1F)) {
+                    article.author?.let {
+                        Text(
+                            text = it,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Text(
+                        text = article.relativePublishedTime,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    )
+                }
+                Row {
+                    IconButton(onClick = { onMoreClick() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_more_vert),
+                            contentDescription = "Bookmark",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun CompactArticleCard(
+    article: HomeArticle = newsItem,
+    onClick: (String) -> Unit = {},
+    onMoreClick: () -> Unit = {}
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick(article.url) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
             modifier = Modifier
-        ) {}
+                .width(3.dp)
+                .height(56.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)),
+        )
+
+        Column(modifier = Modifier.weight(1f)) {
+            AsyncImage(
+                model = article.urlToImage,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                error = painterResource(R.drawable.image_error)
+            )
+            Spacer(Modifier.height(8.dp))
+            article.source?.let {
+                Text(
+                    text = article.source,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                )
+            }
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = article.title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 22.sp,
+            )
+            Spacer(Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    article.author?.let {
+                        Text(
+                            text = article.author,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1F, fill = false),
+                        )
+                        Text(
+                            text = "·",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        )
+                    }
+                    Text(
+                        text = article.relativePublishedTime,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    )
+                }
+                IconButton(onClick = { onMoreClick() }, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_more_vert),
+                        contentDescription = "More options",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionLabel() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .clip(CircleShape)
+        )
+        Text(
+            text = "Latest Stories".uppercase(),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.5.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+        )
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
     }
 }
 
 sealed interface HomeScreenUiActions {
-    object OnRetryClick : HomeScreenUiActions
-    data class OnMenuItemClick(val index: Int) : HomeScreenUiActions
+    data class OnRetryClick(val category: String) : HomeScreenUiActions
+    data class OnRefreshAction(val category: String) : HomeScreenUiActions
     data class OnNewsItemClick(val url: String) : HomeScreenUiActions
+    data class OnMoreClick(val category: String, val article: HomeArticle) : HomeScreenUiActions
 }
 
 val newsItem = HomeArticle(
@@ -218,8 +698,9 @@ val newsItem = HomeArticle(
     author = "Daniel Dale",
     content = "",
     description = "",
-    publishedAt = "",
+    publishedAt = "2026-06-18T00:08:24Z",
     url = "",
     urlToImage = "",
-    onClick = {}
+    relativePublishedTime = "2 minutes ago",
+    source = "BBC News"
 )

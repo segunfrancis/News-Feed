@@ -1,4 +1,4 @@
-package com.segunfrancis.newsfeed.data.models
+package com.segunfrancis.newsfeed.data.local.entities
 
 import androidx.room.Embedded
 import androidx.room.Entity
@@ -14,5 +14,11 @@ data class Article(
     @PrimaryKey val title: String,
     val url: String,
     val urlToImage: String?,
-    val category: String
+    val category: String,
+    val fetchedAt: Long = System.currentTimeMillis(),
+)
+
+data class Source(
+    val id: String?,
+    val name: String
 )

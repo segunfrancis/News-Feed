@@ -1,4 +1,4 @@
-package com.segunfrancis.newsfeed.ui.home.components
+package com.segunfrancis.newsfeed.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
@@ -36,7 +36,7 @@ fun MenuItem(
 
 data class SingleMenuItem(
     val title: String,
-    @DrawableRes val leadingIcon: Int,
+    @param:DrawableRes val leadingIcon: Int,
     val isSelected: Boolean,
     val queryParam: String
 )
@@ -93,5 +93,6 @@ fun MenuItemPreview() {
         title = "Sports",
         leadingIcon = R.drawable.ic_filter_list,
         isSelected = true,
-        onItemClick = {})
+        onItemClick = {}
+    )
 }
