@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -61,6 +62,7 @@ class HomeViewModel @Inject constructor(
                 .getNewsArticles(menuItem.queryParam)
                 .map { pagingData -> pagingData.map { it.toHomeArticle() } }
                 .cachedIn(viewModelScope)
+                .catch { _bookmarkAction.emit(BookmarkActions.OnError(it.handleThrowable())) }
         }
 
     /**
@@ -102,19 +104,23 @@ class HomeViewModel @Inject constructor(
     // Collect once at the screen level — O(1) lookup per card, not N queries.
     private val savedUrls: StateFlow<Set<String>> = bookmarkRepository
         .getBookmarkedUrls()
+        .catch { _bookmarkAction.emit(BookmarkActions.OnError(it.handleThrowable())) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             initialValue = emptySet()
         )
 
-    val isSelectedArticleBookmarked: StateFlow<Boolean> = _selectedArticle.flatMapLatest { article ->
-        article?.let { bookmarkRepository.isBookmarked(article.url) } ?: flowOf(false)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = false
-    )
+    val isSelectedArticleBookmarked: StateFlow<Boolean> =
+        _selectedArticle.flatMapLatest { article ->
+            article?.let { bookmarkRepository.isBookmarked(article.url) } ?: flowOf(false)
+        }
+            .catch { _bookmarkAction.emit(BookmarkActions.OnError(it.handleThrowable())) }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = false
+            )
 
     fun toggleBookmark() {
         viewModelScope.launch(exceptionHandler) {
@@ -150,6 +156,6 @@ sealed interface PagingEvent {
 
 sealed interface BookmarkActions {
     object OnAddBookmark : BookmarkActions
-    object OnRemoveBookmark: BookmarkActions
-    data class OnError(val message: String): BookmarkActions
+    object OnRemoveBookmark : BookmarkActions
+    data class OnError(val message: String) : BookmarkActions
 }

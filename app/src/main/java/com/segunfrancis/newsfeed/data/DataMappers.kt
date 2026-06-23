@@ -68,7 +68,7 @@ internal fun DomainSavedArticle.toEntity() = SavedArticleEntity(
     imageUrl = imageUrl,
     publishedAt = publishedAt,
     category = category,
-    savedAt = savedAt,
+    savedAt = savedAt
 )
 
 internal fun SavedArticleEntity.toDomain() = DomainSavedArticle(

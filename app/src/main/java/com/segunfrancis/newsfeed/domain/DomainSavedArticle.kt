@@ -15,7 +15,7 @@ data class DomainSavedArticle(
     val author: String?,
     val source: String?,
     val imageUrl: String?,
-    val publishedAt: String,    // ISO-8601 string; format in the UI layer
+    val publishedAt: String,
     val category: String,
-    val savedAt: Long,          // epoch millis; use for "Saved X ago" display
+    val savedAt: Long,
 )

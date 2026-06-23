@@ -1,6 +1,7 @@
 package com.segunfrancis.newsfeed.util
 
 import android.content.Context
+import android.content.Intent
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
@@ -30,7 +31,7 @@ fun Throwable.handleThrowable(): String {
                 "It is not you, it is us. Try again"
 
         this is SocketTimeoutException -> "Please check your network connection.\nMake sure you are connected to a good network"
-        else -> "Something went wrong"
+        else -> localizedMessage ?: "Something went wrong"
     }
 }
 
@@ -44,6 +45,15 @@ fun Context.openTab(url: String) {
     builder.setDefaultColorSchemeParams(colorParams)
     val customTabsIntent = builder.build()
     customTabsIntent.launchUrl(this, url.toUri())
+}
+
+fun Context.shareUrl(url: String) {
+    val sendIntent = Intent().apply {
+        action = Intent.ACTION_SEND
+        putExtra(Intent.EXTRA_TEXT, url)
+        type = "text/plain"
+    }
+    startActivity(Intent.createChooser(sendIntent, "Share link via"))
 }
 
 private fun currentDate(): String {

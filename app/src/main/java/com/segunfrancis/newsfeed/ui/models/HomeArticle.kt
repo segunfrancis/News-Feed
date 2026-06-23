@@ -14,6 +14,7 @@ data class HomeArticle(
     val description: String?,
     val urlToImage: String?,
     val publishedAt: String,
+    val formattedPublishedTime: String,
     val relativePublishedTime: String
 )
 
@@ -22,12 +23,13 @@ internal fun DomainArticle.toHomeArticle(): HomeArticle {
         author = author,
         content = content,
         description = description,
-        publishedAt = publishedAt.formatDate(),
+        publishedAt = publishedAt,
         title = title,
         url = url,
         urlToImage = urlToImage,
         source = name,
-        relativePublishedTime = publishedAt.toRelativeTimeString()
+        relativePublishedTime = publishedAt.toRelativeTimeString(),
+        formattedPublishedTime = publishedAt.formatDate()
     )
 }
 
@@ -39,7 +41,7 @@ fun HomeArticle.toDomainSavedArticle(category: String) = DomainSavedArticle(
     author = author,
     source = source,
     imageUrl = urlToImage,
-    publishedAt = publishedAt,  // already formatted — store the raw ISO string if available
-    category = category,     // ensure HomeArticle carries category; add the field if missing
+    publishedAt = publishedAt,
+    category = category,
     savedAt = System.currentTimeMillis(),
 )

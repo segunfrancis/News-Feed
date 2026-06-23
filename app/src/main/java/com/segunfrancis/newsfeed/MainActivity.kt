@@ -149,7 +149,10 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             composable(route = Favourite.route) {
-                                FavouriteScreen()
+                                FavouriteScreen(
+                                    snackbarHostState = snackbarHostState,
+                                    lazyListState = lazyListState
+                                )
                             }
                             composable(route = Settings.route) {
                                 SettingsScreen()

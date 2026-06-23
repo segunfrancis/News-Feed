@@ -31,7 +31,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,8 +38,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -77,15 +74,18 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.segunfrancis.newsfeed.R
+import com.segunfrancis.newsfeed.ui.components.CommonOptionBottomSheet
 import com.segunfrancis.newsfeed.ui.components.ErrorScreen
 import com.segunfrancis.newsfeed.ui.components.LoadingScreen
-import com.segunfrancis.newsfeed.ui.components.OptionItem
 import com.segunfrancis.newsfeed.ui.components.SingleMenuItem
 import com.segunfrancis.newsfeed.ui.components.StickyHeader
 import com.segunfrancis.newsfeed.ui.components.menuItems
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
+import com.segunfrancis.newsfeed.util.formatDate
 import com.segunfrancis.newsfeed.util.handleThrowable
 import com.segunfrancis.newsfeed.util.openTab
+import com.segunfrancis.newsfeed.util.shareUrl
+import com.segunfrancis.newsfeed.util.toRelativeTimeString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -99,7 +99,6 @@ fun HomeScreen(
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val selectedArticle by viewModel.selectedArticle.collectAsState()
     val isBookmarked by viewModel.isSelectedArticleBookmarked.collectAsState()
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         viewModel.bookmarkAction.collect { action ->
@@ -145,45 +144,19 @@ fun HomeScreen(
     )
 
     selectedArticle?.let {
-        ModalBottomSheet(
-            sheetState = bottomSheetState,
+        CommonOptionBottomSheet(
+            isBookmarked = isBookmarked,
+            bottomSheetState = bottomSheetState,
             onDismissRequest = { viewModel.setSelectedArticle(null) },
-            sheetMaxWidth = BottomSheetDefaults.SheetMaxWidth,
-            dragHandle = { BottomSheetDefaults.DragHandle(color = Color.Transparent) },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            properties = ModalBottomSheetProperties(shouldDismissOnBackPress = true)
-        ) {
-            Column {
-                OptionItem(
-                    title = if (isBookmarked) R.string.remove_from_save else R.string.save_for_later,
-                    iconRes = if (isBookmarked) R.drawable.ic_bookmark_filled else R.drawable.ic_bookmark_outline,
-                    onClick = {
-                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                            if (!bottomSheetState.isVisible) {
-                                viewModel.toggleBookmark()
-
-                                viewModel.setSelectedArticle(null)
-                            }
-                        }
-                    }
-                )
-                Spacer(Modifier.height(4.dp))
-                OptionItem(
-                    title = R.string.share,
-                    iconRes = R.drawable.ic_share,
-                    onClick = {
-                        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                            if (!bottomSheetState.isVisible) {
-                                viewModel.toggleBookmark()
-
-                                viewModel.setSelectedArticle(null)
-                            }
-                        }
-                    }
-                )
-                Spacer(Modifier.height(24.dp))
+            onBookmarkClick = {
+                viewModel.toggleBookmark()
+                viewModel.setSelectedArticle(null)
+            },
+            onShareClick = {
+                context.shareUrl(it.url)
+                viewModel.setSelectedArticle(null)
             }
-        }
+        )
     }
 }
 
@@ -415,7 +388,7 @@ private fun NewsTabContent(
     // new items — not on every recomposition.
     val snapshot = articleItems.itemSnapshotList
     val groupedArticles = remember(snapshot) {
-        snapshot.items.drop(1).groupBy { it.publishedAt }
+        snapshot.items.drop(1).groupBy { it.formattedPublishedTime }
     }
 
     PullToRefreshBox(isRefreshing = isRefreshing, onRefresh = { onRefresh() }) {
@@ -701,6 +674,7 @@ val newsItem = HomeArticle(
     publishedAt = "2026-06-18T00:08:24Z",
     url = "",
     urlToImage = "",
-    relativePublishedTime = "2 minutes ago",
-    source = "BBC News"
+    relativePublishedTime = "2026-06-18T00:08:24Z".toRelativeTimeString(),
+    source = "BBC News",
+    formattedPublishedTime = "2026-06-18T00:08:24Z".formatDate()
 )

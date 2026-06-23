@@ -90,7 +90,7 @@ fun NewsItem(
                     )
 
                     Text(
-                        text = article.publishedAt,
+                        text = article.formattedPublishedTime,
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
                             .wrapContentWidth()
