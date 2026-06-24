@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -172,32 +173,43 @@ fun HomeScreenContent(
     val pagerState = rememberPagerState(pageCount = { menuItems.size })
     val scope = rememberCoroutineScope()
 
+    // Hoist one LazyListState per tab here so the tab row and each page share
+    // the same state object. menuItems.size is a compile-time constant so the
+    // number of rememberLazyListState() calls is always identical — stable for Compose.
+    val lazyListStates = menuItems.map { rememberLazyListState() }
+
     Column(modifier) {
         NewsScrollableTabRow(
             tabs = menuItems,
             pagerState = pagerState,
             onTabSelected = { index ->
                 scope.launch {
-                    pagerState.animateScrollToPage(
-                        page = index,
-                        animationSpec = tween(
-                            durationMillis = 300,
-                            easing = FastOutSlowInEasing
-                        ),
-                    )
+                    if (index == pagerState.settledPage) {
+                        // Already on this tab — scroll its list back to the top.
+                        // animateScrollToItem respects the list's own scroll
+                        // animation and will no-op cleanly if already at item 0.
+                        lazyListStates[index].animateScrollToItem(0)
+                    } else {
+                        pagerState.animateScrollToPage(
+                            page = index,
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
+                            ),
+                        )
+                    }
                 }
             },
         )
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .fillMaxSize(),
-            // Improves feel: keep adjacent pages partially composed
+            modifier = Modifier.fillMaxSize(),
             beyondViewportPageCount = 1,
             key = { menuItems[it].title },
         ) { page ->
             val tab = menuItems[page]
             val category = tab.queryParam
+            val isCurrentPage = pagerState.settledPage == page
 
             // Each page gets its own independent paging items.
             // collectAsLazyPagingItems() is stable across recompositions because
@@ -223,8 +235,10 @@ fun HomeScreenContent(
             val hasBackgroundError =
                 mediatorRefreshState is LoadState.Error && articles.itemCount > 0
 
-            if (hasBackgroundError) {
+            if (hasBackgroundError && isCurrentPage) {
                 LaunchedEffect(snackbarHostState) {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+
                     val result = snackbarHostState.showSnackbar(
                         message = (mediatorRefreshState as LoadState.Error).error.handleThrowable(),
                         actionLabel = "Retry",
@@ -248,6 +262,7 @@ fun HomeScreenContent(
                 else -> NewsTabContent(
                     tab = tab,
                     articleItems = articles,
+                    lazyListState = lazyListStates[page],
                     onItemClick = { onAction(HomeScreenUiActions.OnNewsItemClick(it)) },
                     onRefresh = { onAction(HomeScreenUiActions.OnRefreshAction(category)) },
                     onMoreClick = {
@@ -367,15 +382,11 @@ private fun PagerTabIndicator(
 private fun NewsTabContent(
     tab: SingleMenuItem,
     articleItems: LazyPagingItems<HomeArticle>,
+    lazyListState: LazyListState,
     onItemClick: (String) -> Unit,
     onRefresh: () -> Unit,
     onMoreClick: (HomeArticle) -> Unit
 ) {
-    // FIX 2: each tab gets its OWN scroll state — never shared across pages.
-    // Sharing one LazyListState across multiple LazyColumns (which happens
-    // when beyondViewportPageCount > 0) is what caused the deactivated-node crash.
-    val lazyListState = rememberLazyListState()
-
     val mediatorRefreshState = articleItems.loadState.mediator?.refresh
     // True when refreshing but cached data already exists (pull-to-refresh feel)
     val isRefreshing = mediatorRefreshState is LoadState.Loading && articleItems.itemCount > 0

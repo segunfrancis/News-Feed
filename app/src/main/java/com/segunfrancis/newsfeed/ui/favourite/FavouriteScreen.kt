@@ -195,6 +195,7 @@ fun FavouriteItem(
                     .size(18.dp),
             )
         }
+
         AsyncImage(
             model = article.imageUrl,
             contentDescription = null,

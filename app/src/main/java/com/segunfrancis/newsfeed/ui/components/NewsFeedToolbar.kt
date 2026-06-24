@@ -58,7 +58,8 @@ fun NewsFeedToolbar(
                 content = {
                     Icon(
                         painter = painterResource(R.drawable.ic_settings),
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             )
