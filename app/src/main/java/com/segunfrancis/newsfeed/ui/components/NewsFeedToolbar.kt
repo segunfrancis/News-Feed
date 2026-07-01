@@ -3,9 +3,7 @@ package com.segunfrancis.newsfeed.ui.components
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,9 +27,8 @@ import com.segunfrancis.newsfeed.ui.theme.NewsFeedTheme
 fun NewsFeedToolbar(
     @StringRes title: Int = R.string.app_name,
     scrollBehavior: TopAppBarScrollBehavior,
-    isMenuExpanded: Boolean,
-    onMenuItemClick: (Int) -> Unit,
-    onMenuAction: (Boolean) -> Unit
+    onMenuAction: () -> Unit,
+    onSearchClick: () -> Unit
 ) {
     TopAppBar(
         modifier = Modifier
@@ -52,9 +49,21 @@ fun NewsFeedToolbar(
             )
         },
         scrollBehavior = scrollBehavior,
+        navigationIcon = {
+            IconButton(
+                onClick = { onSearchClick() },
+                content = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_search),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            )
+        },
         actions = {
             IconButton(
-                onClick = { onMenuAction(true) },
+                onClick = { onMenuAction() },
                 content = {
                     Icon(
                         painter = painterResource(R.drawable.ic_settings),
@@ -63,21 +72,6 @@ fun NewsFeedToolbar(
                     )
                 }
             )
-            DropdownMenu(
-                modifier = Modifier.background(color = Color.White),
-                expanded = isMenuExpanded,
-                onDismissRequest = { onMenuAction(false) },
-                content = {
-                    menuItems.forEachIndexed { index, item ->
-                        MenuItem(
-                            title = item.title,
-                            leadingIcon = item.leadingIcon,
-                            onItemClick = {
-                                onMenuItemClick(index)
-                                onMenuAction(false)
-                            })
-                    }
-                })
         }
     )
 }
@@ -89,11 +83,9 @@ fun NewsFeedToolbar(
 fun NewsFeedToolbarPreview() {
     NewsFeedTheme {
         NewsFeedToolbar(
-            title = R.string.app_name,
-            isMenuExpanded = false,
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
-            onMenuItemClick = {},
-            onMenuAction = {}
+            onMenuAction = {},
+            onSearchClick = {}
         )
     }
 }

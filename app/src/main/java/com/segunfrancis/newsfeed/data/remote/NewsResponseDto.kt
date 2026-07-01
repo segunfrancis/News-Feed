@@ -20,7 +20,7 @@ data class ArticleDto(
     val title: String,
     val url: String,
     val urlToImage: String?,
-    val category: String,
+    val category: String? = null,
     val fetchedAt: Long = System.currentTimeMillis(),
 )
 

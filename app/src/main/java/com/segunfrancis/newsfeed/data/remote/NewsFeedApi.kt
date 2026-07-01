@@ -12,4 +12,13 @@ interface NewsFeedApi {
         @Query("category") category: String,
         @Query("apiKey") apiKey: String = BuildConfig.NEWS_API_KEY
     ): NewsBaseResponseDto
+
+    @GET("everything")
+    suspend fun searchNews(
+        @Query("q") query: String,
+        @Query("apiKey") apiKey: String = BuildConfig.NEWS_API_KEY,
+        @Query("searchIn") searchIn: String = "title,description",
+        @Query("sortBy") sortBy: String = "publishedAt",
+        @Query("pageSize") pageSize: Int = 30
+    ): NewsBaseResponseDto
 }

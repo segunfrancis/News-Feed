@@ -19,7 +19,7 @@ internal fun ArticleDto.toDomainArticle(): DomainArticle {
         title = title,
         url = url,
         urlToImage = urlToImage,
-        category = category,
+        category = category.orEmpty(),
         fetchedAt = fetchedAt
     )
 }
@@ -50,7 +50,7 @@ internal fun ArticleDto.toLocalArticle(): Article {
         title = title,
         url = url,
         urlToImage = urlToImage,
-        category = category
+        category = category.orEmpty()
     )
 }
 

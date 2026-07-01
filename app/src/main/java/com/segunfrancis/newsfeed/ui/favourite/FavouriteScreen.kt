@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.segunfrancis.newsfeed.R
@@ -57,6 +58,7 @@ fun FavouriteScreen(snackbarHostState: SnackbarHostState, lazyListState: LazyLis
     val selectedArticle by viewModel.selectedArticle.collectAsStateWithLifecycle()
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val context = LocalContext.current
+    val resource = LocalResources.current
     LaunchedEffect(Unit) {
         viewModel.actions.collect { action ->
             when (action) {
@@ -68,7 +70,7 @@ fun FavouriteScreen(snackbarHostState: SnackbarHostState, lazyListState: LazyLis
                 }
 
                 FavouriteActions.OnRemoveBookmark -> {
-                    snackbarHostState.showSnackbar(context.getString(R.string.removed_from_save))
+                    snackbarHostState.showSnackbar(resource.getString(R.string.removed_from_save))
                 }
             }
         }

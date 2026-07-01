@@ -11,4 +11,6 @@ interface NewsFeedRepository {
     suspend fun getNewsArticleTest(category: String): Flow<ResponseTest>
 
     suspend fun prefetchAll(categories: List<String>): List<Result<Unit>>
+
+    suspend fun searchNews(query: String): List<DomainArticle>
 }

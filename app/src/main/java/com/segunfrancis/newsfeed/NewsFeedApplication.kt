@@ -40,6 +40,7 @@ class NewsFeedApplication : Application(), ImageLoaderFactory {
             .respectCacheHeaders(false)
             .crossfade(true)
             .logger(DebugLogger())
+            .placeholder(R.drawable.image_placeholder)
             .build()
     }
 }

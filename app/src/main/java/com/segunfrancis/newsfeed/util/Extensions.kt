@@ -9,6 +9,7 @@ import androidx.core.net.toUri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.paging.compose.LazyPagingItems
 import com.segunfrancis.newsfeed.R
 import retrofit2.HttpException
 import timber.log.Timber
@@ -76,4 +77,9 @@ fun String?.formatDate(): String {
         t.printStackTrace()
         ""
     }
+}
+
+fun <T : Any> LazyPagingItems<T>.getOrNull(index: Int): T? {
+    if (this.itemCount <= index) return null
+    return this[index]
 }

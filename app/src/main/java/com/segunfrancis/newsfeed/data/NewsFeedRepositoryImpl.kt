@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
@@ -109,6 +110,14 @@ class NewsFeedRepositoryImpl @Inject constructor(
         categories
             .map { category -> async { runCatching { fetchAndCache(category) } } }
             .awaitAll()
+    }
+
+    override suspend fun searchNews(query: String): List<DomainArticle> {
+        return withContext(dispatcher) {
+            api.searchNews(query = query).articles
+                .filterNot { it.isRemoved() }
+                .map { articleDto -> articleDto.toDomainArticle() }
+        }
     }
 
     // ── Internal ─────────────────────────────────────────────────────────────

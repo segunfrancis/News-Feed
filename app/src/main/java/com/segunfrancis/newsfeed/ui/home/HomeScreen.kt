@@ -18,11 +18,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -39,12 +37,12 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabPosition
+import androidx.compose.material3.TabIndicatorScope
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -60,6 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -68,7 +67,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -83,12 +82,14 @@ import com.segunfrancis.newsfeed.ui.components.StickyHeader
 import com.segunfrancis.newsfeed.ui.components.menuItems
 import com.segunfrancis.newsfeed.ui.models.HomeArticle
 import com.segunfrancis.newsfeed.util.formatDate
+import com.segunfrancis.newsfeed.util.getOrNull
 import com.segunfrancis.newsfeed.util.handleThrowable
 import com.segunfrancis.newsfeed.util.openTab
 import com.segunfrancis.newsfeed.util.shareUrl
 import com.segunfrancis.newsfeed.util.toRelativeTimeString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -97,6 +98,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val resource = LocalResources.current
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val selectedArticle by viewModel.selectedArticle.collectAsState()
     val isBookmarked by viewModel.isSelectedArticleBookmarked.collectAsState()
@@ -106,7 +108,7 @@ fun HomeScreen(
             when (action) {
                 BookmarkActions.OnAddBookmark -> {
                     snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.added_to_save),
+                        message = resource.getString(R.string.added_to_save),
                         duration = SnackbarDuration.Short
                     )
                 }
@@ -118,7 +120,7 @@ fun HomeScreen(
                 }
                 BookmarkActions.OnRemoveBookmark -> {
                     snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.removed_from_save),
+                        message = resource.getString(R.string.removed_from_save),
                         duration = SnackbarDuration.Short
                     )
                 }
@@ -240,7 +242,7 @@ fun HomeScreenContent(
                     snackbarHostState.currentSnackbarData?.dismiss()
 
                     val result = snackbarHostState.showSnackbar(
-                        message = (mediatorRefreshState as LoadState.Error).error.handleThrowable(),
+                        message = mediatorRefreshState.error.handleThrowable(),
                         actionLabel = "Retry",
                         duration = SnackbarDuration.Indefinite,
                         withDismissAction = true,
@@ -255,7 +257,7 @@ fun HomeScreenContent(
                 isInitialLoad -> LoadingScreen()
 
                 isCriticalError -> ErrorScreen(
-                    errorMessage = (mediatorRefreshState as LoadState.Error).error.handleThrowable(),
+                    errorMessage = mediatorRefreshState.error.handleThrowable(),
                     onRetryClick = { onAction(HomeScreenUiActions.OnRetryClick(category)) },
                 )
 
@@ -288,20 +290,17 @@ private fun NewsScrollableTabRow(
 ) {
     val selectedIndex = pagerState.currentPage
 
-    ScrollableTabRow(
+    SecondaryScrollableTabRow(
         selectedTabIndex = selectedIndex,
         modifier = Modifier.fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.primary,
         edgePadding = 0.dp,
-        indicator = { tabPositions ->
-            if (tabPositions.isNotEmpty()) {
-                PagerTabIndicator(
-                    tabPositions = tabPositions,
-                    pagerState = pagerState,
-                    indicatorColor = MaterialTheme.colorScheme.secondary,
-                )
-            }
+        indicator = {
+            PagerTabIndicator(
+                pagerState = pagerState,
+                indicatorColor = MaterialTheme.colorScheme.secondary
+            )
         },
         divider = {
             HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
@@ -338,43 +337,56 @@ private fun NewsScrollableTabRow(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PagerTabIndicator(
-    tabPositions: List<TabPosition>,
+fun TabIndicatorScope.PagerTabIndicator(
     pagerState: PagerState,
     indicatorColor: Color,
+    modifier: Modifier = Modifier,
     indicatorHeight: Dp = 3.dp,
 ) {
-    // pagerState.currentPageOffsetFraction is in [-0.5, 0.5]
-    // We use it to interpolate the indicator between the current and target tab
-    val currentPage = minOf(pagerState.currentPage, tabPositions.lastIndex)
-    val fraction = pagerState.currentPageOffsetFraction
-
-    val targetPage = (currentPage + if (fraction > 0) 1 else -1)
-        .coerceIn(tabPositions.indices)
-
-    // Lerp width and offset so the indicator stretches slightly mid-swipe
-    val indicatorWidth: Dp
-    val indicatorOffset: Dp
-
-    if (tabPositions.isEmpty()) return
-
-    val currentTab = tabPositions[currentPage]
-    val targetTab = tabPositions[targetPage]
-    val absFraction = kotlin.math.abs(fraction)
-
-    indicatorWidth = lerp(currentTab.width, targetTab.width, absFraction)
-    indicatorOffset = lerp(currentTab.left, targetTab.left, absFraction)
-
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(align = Alignment.BottomStart)
-            .offset(x = indicatorOffset)
-            .width(indicatorWidth)
-            .padding(horizontal = 12.dp)         // inset so it doesn't span full tab width
+        modifier = modifier
+            .tabIndicatorLayout { measurable, constraints, tabPositions ->
+                if (tabPositions.isEmpty()) {
+                    return@tabIndicatorLayout layout(0, 0) {}
+                }
+
+                // 1. Calculate horizontal interpolation matching user swipes
+                val currentPage = minOf(pagerState.currentPage, tabPositions.lastIndex)
+                val fraction = pagerState.currentPageOffsetFraction
+
+                val targetPage = (currentPage + if (fraction > 0) 1 else -1)
+                    .coerceIn(tabPositions.indices)
+
+                val currentTab = tabPositions[currentPage]
+                val targetTab = tabPositions[targetPage]
+                val absFraction = abs(fraction)
+
+                val indicatorWidth = lerp(currentTab.width, targetTab.width, absFraction)
+                val indicatorOffset = lerp(currentTab.left, targetTab.left, absFraction)
+
+                // 2. Measure the box matching the precise target tab width
+                val widthPx = indicatorWidth.roundToPx()
+                val placeable = measurable.measure(
+                    constraints.copy(
+                        minWidth = widthPx,
+                        maxWidth = widthPx,
+                        minHeight = 0,
+                        maxHeight = constraints.maxHeight
+                    )
+                )
+
+                // 3. Set layout width to widthPx so it scrolls natively with the tabs track
+                layout(widthPx, constraints.maxHeight) {
+                    val yBottomOffset = constraints.maxHeight - placeable.height
+                    // 4. Place relative using the offset calculated from the track start
+                    placeable.placeRelative(indicatorOffset.roundToPx(), yBottomOffset)
+                }
+            }
+            // 5. Perfect alignment styling
             .height(indicatorHeight)
+            .padding(horizontal = 12.dp) // Adjust this value to perfectly match your text's bounds
             .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
-            .background(indicatorColor),
+            .background(indicatorColor)
     )
 }
 
@@ -410,7 +422,7 @@ private fun NewsTabContent(
                 state = lazyListState
             ) {
                 // Prominent top story
-                articleItems[0]?.let {
+                articleItems.getOrNull(0)?.let {
                     item {
                         HeroArticleCard(
                             article = it,
