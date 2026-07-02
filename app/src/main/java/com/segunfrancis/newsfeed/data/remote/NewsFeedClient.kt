@@ -1,9 +1,11 @@
 package com.segunfrancis.newsfeed.data.remote
 
+import android.net.TrafficStats
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.segunfrancis.newsfeed.util.AppConstants.BASE_URL
 import com.segunfrancis.newsfeed.util.AppConstants.NETWORK_TIMEOUT
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -20,9 +22,21 @@ object NewsFeedClient {
         return HttpLoggingInterceptor().also { it.level = HttpLoggingInterceptor.Level.BODY }
     }
 
+    private fun provideTrafficStatsInterceptor(): Interceptor {
+        return Interceptor { chain ->
+            TrafficStats.setThreadStatsTag(1)
+            try {
+                chain.proceed(chain.request())
+            } finally {
+                TrafficStats.clearThreadStatsTag()
+            }
+        }
+    }
+
     private fun provideClient(): OkHttpClient {
         return OkHttpClient().newBuilder()
             .addInterceptor(provideLoggingInterceptor())
+            //.addInterceptor(provideTrafficStatsInterceptor())
             .callTimeout(NETWORK_TIMEOUT, TimeUnit.SECONDS)
             .connectTimeout(NETWORK_TIMEOUT, TimeUnit.SECONDS)
             .build()

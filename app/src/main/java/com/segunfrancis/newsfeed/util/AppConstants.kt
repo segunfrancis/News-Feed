@@ -7,4 +7,5 @@ object AppConstants {
     const val BASE_URL: String = "https://newsapi.org/v2/"
     const val DATABASE_NAME: String = BuildConfig.APPLICATION_ID.plus("_database")
     const val NETWORK_TIMEOUT: Long = 30L
+    const val MENU_OPTION_PREF_KEY: String = "menu-option-preference-key"
 }

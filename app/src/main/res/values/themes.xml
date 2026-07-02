@@ -3,6 +3,5 @@
 
     <style name="Theme.NewsFeed" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@color/app_color</item>
-        <item name="android:background">@color/app_color</item>
     </style>
 </resources>
