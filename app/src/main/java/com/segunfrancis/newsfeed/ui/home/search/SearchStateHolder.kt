@@ -38,7 +38,7 @@ class SearchStateHolder(
                 uiState = if (results.isNotEmpty()) {
                     SearchUiState.Success(results)
                 } else {
-                    SearchUiState.Empty
+                    SearchUiState.Empty(trimmed)
                 }
             } catch (c: CancellationException) {
                 throw c       // must re-throw — structured concurrency depends on it

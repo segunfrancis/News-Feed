@@ -112,7 +112,7 @@ sealed interface SearchUiState {
     data object Loading : SearchUiState
     data class Error(val message: String) : SearchUiState
     data class Success(val articles: List<HomeArticle>) : SearchUiState
-    data object Empty : SearchUiState
+    data class Empty(val query: String) : SearchUiState
 }
 
 sealed interface SearchBookmarkActions {
