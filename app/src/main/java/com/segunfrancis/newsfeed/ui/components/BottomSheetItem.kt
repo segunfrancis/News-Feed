@@ -56,7 +56,7 @@ fun CommonOptionBottomSheet(
 ) {
     ModalBottomSheet(
         sheetState = bottomSheetState,
-        onDismissRequest = { /*viewModel.setSelectedArticle(null)*/ onDismissRequest() },
+        onDismissRequest = { onDismissRequest() },
         sheetMaxWidth = BottomSheetDefaults.SheetMaxWidth,
         dragHandle = { BottomSheetDefaults.DragHandle(color = Color.Transparent) },
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
