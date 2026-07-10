@@ -11,16 +11,20 @@ import com.segunfrancis.newsfeed.data.remote.NewsFeedApi
 import com.segunfrancis.newsfeed.data.remote.isRemoved
 import com.segunfrancis.newsfeed.domain.DomainArticle
 import com.segunfrancis.newsfeed.domain.NewsFeedRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalPagingApi::class)
 class NewsFeedRepositoryImpl @Inject constructor(
@@ -104,12 +108,44 @@ class NewsFeedRepositoryImpl @Inject constructor(
      * WorkManager task or when the user has a fast connection).
      *
      * coroutineScope {} makes all async {} calls fail-fast together.
-     * Use supervisorScope {} instead if you want one failure to NOT cancel others.
+     * If one category fails (after its internal retries), the entire process
+     * is cancelled and the error is propagated.
      */
-    override suspend fun prefetchAll(categories: List<String>) = coroutineScope {
+    override suspend fun prefetchAll(categories: List<String>): List<Result<Unit>> = coroutineScope {
         categories
-            .map { category -> async { runCatching { fetchAndCache(category) } } }
+            .map { category ->
+                async { retry(times = 3) { fetchAndCache(category) } }
+            }
             .awaitAll()
+        // If we reach here, all categories succeeded.
+        categories.map { Result.success(Unit) }
+    }
+
+    private suspend fun <T> retry(
+        times: Int,
+        initialDelayMillis: Long = 1000,
+        maxDelayMillis: Long = 10000,
+        factor: Double = 2.0,
+        block: suspend () -> T
+    ): T {
+        var currentDelay = initialDelayMillis
+        repeat(times) { attempt ->
+            try {
+                return block()
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                if (attempt == times - 1 || !isNetworkException(e)) {
+                    throw e
+                }
+                delay(currentDelay.milliseconds)
+                currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelayMillis)
+            }
+        }
+        return block() // Should not reach here
+    }
+
+    private fun isNetworkException(throwable: Throwable): Boolean {
+        return throwable is IOException
     }
 
     override suspend fun searchNews(query: String): List<DomainArticle> {
@@ -128,7 +164,6 @@ class NewsFeedRepositoryImpl @Inject constructor(
             .filterNot { it.isRemoved() }
             .map { it.toLocalArticle() }
         val dao = dao ?: return
-        dao.clearCategory(category)
         dao.addNewsArticles(*articles.toTypedArray())
     }
 }

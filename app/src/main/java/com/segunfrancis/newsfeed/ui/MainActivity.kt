@@ -46,6 +46,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -177,6 +178,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     ExpandedFullScreenSearchBar(state = searchBarState, inputField = inputField) {
+                        val searchSnackbarHostState = remember { SnackbarHostState() }
                         val searchStateHolder = rememberSearchStateHolder(
                             onSearch = mainViewModel.searchOperation,
                         )
@@ -193,19 +195,19 @@ class MainActivity : ComponentActivity() {
                             mainViewModel.bookmarkAction.collect { action ->
                                 when (action) {
                                     SearchBookmarkActions.OnAddBookmark -> {
-                                        snackbarHostState.showSnackbar(
+                                        searchSnackbarHostState.showSnackbar(
                                             message = getString(R.string.added_to_save),
                                             duration = SnackbarDuration.Short
                                         )
                                     }
                                     is SearchBookmarkActions.OnError -> {
-                                        snackbarHostState.showSnackbar(
+                                        searchSnackbarHostState.showSnackbar(
                                             message = action.message,
                                             duration = SnackbarDuration.Short
                                         )
                                     }
                                     SearchBookmarkActions.OnRemoveBookmark -> {
-                                        snackbarHostState.showSnackbar(
+                                        searchSnackbarHostState.showSnackbar(
                                             message = getString(R.string.removed_from_save),
                                             duration = SnackbarDuration.Short
                                         )
@@ -236,12 +238,17 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
-
-                        SearchScreen(
-                            stateHolder = searchStateHolder,
-                            onItemClick = { openTab(it) },
-                            onMoreClick = { mainViewModel.setSelectedArticle(it) }
-                        )
+                        Box {
+                            SearchScreen(
+                                stateHolder = searchStateHolder,
+                                onItemClick = { openTab(it) },
+                                onMoreClick = { mainViewModel.setSelectedArticle(it) }
+                            )
+                            SnackbarHost(
+                                hostState = searchSnackbarHostState,
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                            )
+                        }
                     }
                     Scaffold(
                         modifier = Modifier
@@ -290,9 +297,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(innerPadding)
                         ) {
                             composable(route = Home.route) {
-                                HomeScreen(
-                                    snackbarHostState = snackbarHostState
-                                )
+                                HomeScreen(snackbarHostState = snackbarHostState)
                             }
                             composable(route = Favourite.route) {
                                 FavouriteScreen(

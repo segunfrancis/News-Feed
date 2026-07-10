@@ -42,7 +42,7 @@ object NewsFeedClient {
             .build()
     }
 
-    fun getApi(): NewsFeedApi {
+    internal fun getApi(): NewsFeedApi {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(provideGson()))

@@ -1,8 +1,9 @@
 package com.segunfrancis.newsfeed.di
 
 import android.content.Context
-import com.segunfrancis.newsfeed.data.local.dao.NewsFeedDao
+import androidx.work.WorkManager
 import com.segunfrancis.newsfeed.data.local.NewsFeedDatabase
+import com.segunfrancis.newsfeed.data.local.dao.NewsFeedDao
 import com.segunfrancis.newsfeed.data.local.dao.SavedArticleDao
 import com.segunfrancis.newsfeed.data.remote.NewsFeedApi
 import com.segunfrancis.newsfeed.data.remote.NewsFeedClient
@@ -47,4 +48,9 @@ class NewsFeedModule {
     fun provideIoDispatcher(): CoroutineDispatcher {
         return Dispatchers.IO
     }
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager =
+        WorkManager.getInstance(context)
 }

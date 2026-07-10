@@ -11,4 +11,9 @@
     <string name="removed_from_save">Story remove from saved news</string>
     <string name="added_to_save">Story added to saved news</string>
     <string name="share">Share</string>
+    <string name="no_saved_news">No saved news</string>
+    <string name="no_saved_news_description">The news you save will be stored here to read later</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="not_found">Not found</string>
+    <string name="not_found_description">Sorry, we could not find any news for your search %s</string>
 </resources>

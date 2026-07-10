@@ -10,7 +10,7 @@ import com.segunfrancis.newsfeed.data.remote.NewsFeedApi
 import com.segunfrancis.newsfeed.data.remote.isRemoved
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.hours
 
 @OptIn(ExperimentalPagingApi::class)
 class NewsRemoteMediator(
@@ -21,7 +21,7 @@ class NewsRemoteMediator(
 ) : RemoteMediator<Int, Article>() {
 
     companion object {
-        private val CACHE_TTL = 1.minutes.inWholeMilliseconds // TODO: Change to 1 hour
+        private val CACHE_TTL = 48.hours.inWholeMilliseconds
     }
 
     /**
