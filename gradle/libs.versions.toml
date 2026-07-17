@@ -1,0 +1,130 @@
+[versions]
+agp = "8.13.2"
+kotlin = "2.1.0"
+coreKtx = "1.15.0"
+lifecycle = "2.8.2"
+activityCompose = "1.13.0"
+composeBom = "2026.06.00"
+coroutines = "1.8.1"
+navigation = "2.9.2"
+retrofit = "2.11.0"
+okhttp = "4.12.0"
+coil = "2.6.0"
+timber = "5.0.1"
+hilt = "2.57.1"
+hiltNavigation = "1.3.0"
+hiltWork = "1.4.0"
+work = "2.11.2"
+room = "2.6.1"
+paging = "3.3.5"
+lottie = "6.4.1"
+datastore = "1.2.1"
+browser = "1.10.0"
+constraintlayoutCompose = "1.1.0"
+junit = "4.13.2"
+junitJupiter = "5.10.2"
+testExtJunit = "1.1.5"
+espresso = "3.5.1"
+desugar = "2.1.5"
+serialization = "1.8.0"
+
+[libraries]
+androidxCoreKtx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidxLifecycleRuntimeKtx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidxActivityCompose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidxComposeBom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidxComposeUi = { group = "androidx.compose.ui", name = "ui" }
+androidxComposeUiToolingPreview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidxComposeMaterialIconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidxComposeMaterial3 = { group = "androidx.compose.material3", name = "material3" }
+androidxComposeMaterial3AdaptiveNavigationSuite = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite" }
+androidxComposeMaterial3Adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive" }
+androidxComposeMaterial3AdaptiveLayout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout" }
+androidxComposeUiTestJunit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidxComposeUiTooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidxComposeUiTestManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+
+kotlinxCoroutinesAndroid = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+androidxNavigationCompose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+androidxLifecycleViewmodelCompose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+androidxLifecycleViewmodelKtx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofitConverterGson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttpLoggingInterceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+
+coilCompose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+hiltAndroid = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hiltCompiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+androidxHiltNavigationCompose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigation" }
+androidxHiltWork = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
+androidxHiltCompiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltWork" }
+androidxWorkRuntimeKtx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+
+androidxRoomRuntime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidxRoomKtx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+androidxRoomCompiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidxRoomPaging = { group = "androidx.room", name = "room-paging", version.ref = "room" }
+androidxRoomTesting = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+
+androidxPagingRuntimeKtx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
+androidxPagingCompose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+lottieCompose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+androidxDatastorePreferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+androidxBrowser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+androidxConstraintlayoutCompose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
+
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+junitJupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
+androidxTestExtJunit = { group = "androidx.test.ext", name = "junit", version.ref = "testExtJunit" }
+androidxTestEspressoCore = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+
+androidxAndroidDesugarLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
+kotlinxSerializationJson = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+
+[bundles]
+compose = [
+    "androidxComposeUi",
+    "androidxComposeUiToolingPreview",
+    "androidxComposeMaterialIconsExtended",
+    "androidxComposeMaterial3",
+    "androidxComposeMaterial3AdaptiveNavigationSuite",
+    "androidxComposeMaterial3Adaptive",
+    "androidxComposeMaterial3AdaptiveLayout"
+]
+lifecycle = [
+    "androidxLifecycleRuntimeKtx",
+    "androidxLifecycleViewmodelCompose",
+    "androidxLifecycleViewmodelKtx"
+]
+networking = [
+    "retrofit",
+    "retrofitConverterGson",
+    "okhttpLoggingInterceptor"
+]
+hilt = [
+    "hiltAndroid",
+    "androidxHiltNavigationCompose",
+    "androidxHiltWork"
+]
+room = [
+    "androidxRoomRuntime",
+    "androidxRoomKtx",
+    "androidxRoomPaging"
+]
+paging = [
+    "androidxPagingRuntimeKtx",
+    "androidxPagingCompose"
+]
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlinKapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -185,16 +185,14 @@ fun HomeScreenContent(
                 scope.launch {
                     if (index == pagerState.settledPage) {
                         // Already on this tab — scroll its list back to the top.
-                        // animateScrollToItem respects the list's own scroll
-                        // animation and will no-op cleanly if already at item 0.
-                        lazyListStates[index].animateScrollToItem(0)
+                        lazyListStates[index].scrollToItem(0)
                     } else {
                         pagerState.animateScrollToPage(
                             page = index,
                             animationSpec = tween(
                                 durationMillis = 300,
                                 easing = FastOutSlowInEasing
-                            ),
+                            )
                         )
                     }
                 }

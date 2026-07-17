@@ -1,10 +1,10 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    id 'kotlin-parcelize'
-    id 'kotlin-kapt'
-    id 'com.google.dagger.hilt.android'
-    id 'org.jetbrains.kotlin.plugin.compose'
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinParcelize)
+    alias(libs.plugins.kotlinKapt)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.composeCompiler)
 }
 
 def getApiKey() {
@@ -16,12 +16,12 @@ def getApiKey() {
 
 android {
     namespace 'com.segunfrancis.newsfeed'
-    compileSdk 37
+    compileSdk = 37
 
     defaultConfig {
         applicationId "com.segunfrancis.newsfeed"
         minSdk 23
-        targetSdk 37
+        targetSdk = 37
         versionCode 1
         versionName "1.0"
 
@@ -73,71 +73,57 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
-    implementation 'androidx.core:core-ktx:1.15.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.2'
-    implementation 'androidx.activity:activity-compose:1.13.0'
+    coreLibraryDesugaring libs.androidxAndroidDesugarLibs
+    implementation libs.androidxCoreKtx
+    implementation libs.androidxActivityCompose
+    implementation libs.bundles.lifecycle
+    implementation libs.kotlinxSerializationJson
 
     // --- Jetpack Compose Bill of Materials (BOM) ---
-    implementation platform('androidx.compose:compose-bom:2026.06.00')
-    testImplementation platform('androidx.compose:compose-bom:2026.06.00')
-    androidTestImplementation platform('androidx.compose:compose-bom:2026.06.00')
+    implementation platform(libs.androidxComposeBom)
+    testImplementation platform(libs.androidxComposeBom)
+    androidTestImplementation platform(libs.androidxComposeBom)
 
     // Material 3 & Compose Components (Versions managed by BOM)
-    implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.material:material-icons-extended"
-    implementation "androidx.compose.material3:material3"
-    implementation "androidx.compose.material3:material3-adaptive-navigation-suite"
-    implementation "androidx.compose.material3.adaptive:adaptive"
-    implementation "androidx.compose.material3.adaptive:adaptive-layout"
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
-    debugImplementation "androidx.compose.ui:ui-tooling"
-    debugImplementation "androidx.compose.ui:ui-test-manifest"
+    implementation libs.bundles.compose
+    androidTestImplementation libs.androidxComposeUiTestJunit4
+    debugImplementation libs.androidxComposeUiTooling
+    debugImplementation libs.androidxComposeUiTestManifest
 
-    // Navigation, Thread Safety & State Observables
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
-    implementation "androidx.navigation:navigation-compose:2.9.2"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2"
+    // Navigation & Coroutines
+    implementation libs.kotlinxCoroutinesAndroid
+    implementation libs.androidxNavigationCompose
 
-    // API Networking Setup
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.12.0"
+    // Networking
+    implementation libs.bundles.networking
 
     // Media Pipeline & Diagnostics
-    implementation "io.coil-kt:coil-compose:2.6.0"
-    implementation 'com.jakewharton.timber:timber:5.0.1'
+    implementation libs.coilCompose
+    implementation libs.timber
 
     // Dagger Hilt Dependency Engine & WorkManager
-    implementation 'androidx.hilt:hilt-navigation-compose:1.3.0'
-    implementation "com.google.dagger:hilt-android:2.57.1"
-    kapt "com.google.dagger:hilt-compiler:2.57.1"
-    implementation "androidx.hilt:hilt-work:1.4.0"
-    kapt "androidx.hilt:hilt-compiler:1.4.0"
-    implementation "androidx.work:work-runtime-ktx:2.11.2"
+    implementation libs.bundles.hilt
+    kapt libs.hiltCompiler
+    kapt libs.androidxHiltCompiler
+    implementation libs.androidxWorkRuntimeKtx
 
     // Room Storage Layers
-    implementation "androidx.room:room-runtime:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
-    implementation "androidx.room:room-paging:$room_version"
+    implementation libs.bundles.room
+    kapt libs.androidxRoomCompiler
 
     // Pagination & Supporting Jetpack Frameworks
-    implementation "androidx.paging:paging-runtime-ktx:3.5.0"
-    implementation "androidx.paging:paging-compose:3.5.0"
-    implementation "com.airbnb.android:lottie-compose:6.4.1"
-    implementation "androidx.datastore:datastore-preferences:1.2.1"
-    implementation "androidx.browser:browser:1.10.0"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0"
+    implementation libs.bundles.paging
+    implementation libs.lottieCompose
+    implementation libs.androidxDatastorePreferences
+    implementation libs.androidxBrowser
+    implementation libs.androidxConstraintlayoutCompose
 
     // Mock Testing Frameworks
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation "androidx.room:room-testing:$room_version"
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    testImplementation libs.junitJupiter
+    testImplementation libs.junit
+    androidTestImplementation libs.androidxTestExtJunit
+    androidTestImplementation libs.androidxRoomTesting
+    androidTestImplementation libs.androidxTestEspressoCore
 }
 
 kapt {
@@ -146,6 +132,6 @@ kapt {
 
 configurations.configureEach {
     resolutionStrategy {
-        force "com.google.dagger:hilt-android:2.57.1"
+        force libs.hiltAndroid
     }
 }
